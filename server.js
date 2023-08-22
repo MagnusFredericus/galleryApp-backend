@@ -1,0 +1,21 @@
+const express = require('express')
+const config = require('./config/config')
+const cors = require('cors')
+const db = require('./model/sequelize')
+const { logger, errorLogger } = require('./logger/morgan')
+const app = express()
+
+app.use(cors(config.corsOptions()))
+app.use(logger)
+app.use(errorLogger)
+app.use(express.json())
+app.use('/auth', require('./view/auth'))
+app.use('/image', require('./view/image'))
+app.use('/audio', require('./view/audio'))
+app.use('/video', require('./view/video'))
+app.use('*', require('./middleware/notFoundHandler'))
+app.use(require('./middleware/errorHandler'))
+
+db.sequelize.sync().then(() => {
+    app.listen(config.PORT, () => {console.log(`Server running on port ${config.PORT}`)})
+})
